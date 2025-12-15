@@ -4,88 +4,77 @@ from pyscf.mcscf.addons import project_init_guess
 import basis_set_exchange as bse
 import pyscf
 import pennylane as qml 
+from pyscf.fci import direct_spin1, addons
+
 
 import os
 Hs = []
 Es = []
+hf_energies = []
+casci_energies = []
 
 
-def H_gen(basis_input, elements, geom, spin, charge, ncas, nelecas,
-          save=True, savefile="H_data.npz", geom_id=None):
-    # Define bond distance range for potential energy surface
-    hf_energies = []
-    casci_energies = []
+#Building reference calculation
 
-    print("Computing U2 potential energy surface...")
-    print("Bond Distance (Å)     HF Energy (Hartree)      CASCI Energy (Hartree)")
-    print("-" * 75)
-
-    # ---------- Step 1: Reference CASSCF calculation ----------
+def build_u2_reference(basis_input, ncas, nelecas):
     mol_ref = gto.Mole()
-    mol_ref.atom = '''
+    mol_ref.atom = """
     U 0 0 0
     U 0 0 2.5
-    '''
-    # Use a built-in basis (fix for BasisNotFoundError)
-    mol_ref.basis = basis_input        # or try 'def2-TZVP' / 'ano-rcc-mb' if available
+    """
+    mol_ref.basis = basis_input
     mol_ref.charge = 0
     mol_ref.spin = 0
     mol_ref.symmetry = False
     mol_ref.build()
+    mol_ref.verbose = 0
 
-    # Perform ROHF + X2C (spin-free)
     mf_ref = scf.ROHF(mol_ref).sfx2c1e()
     mf_ref.level_shift = 0.5
     mf_ref.diis_space = 12
     mf_ref.max_cycle = 100
-    #mf_ref.verbose = 0
+    mf_ref.verbose = 0
     mf_ref.kernel()
     if not mf_ref.converged:
         mf_ref = scf.newton(mf_ref).run()
 
-    # One-shot CASSCF to get proper active orbitals
     mycas_ref = mcscf.CASSCF(mf_ref, ncas, nelecas)
     mycas_ref.fix_spin_(ss=0.0)
+    mycas_ref.verbose = 0
     en = mycas_ref.kernel()
-    print('Ref.CASSCF energy:', en[0])
-    mo_ref = mycas_ref.mo_coeff
-    print('\n')
 
-    # ---------- Step 2: CASCI scan with projected orbitals ----------
-    mo_prev = None
-    print('-----------------Bond distances ---------', geom)
+    mo_ref = mycas_ref.mo_coeff
+    return mol_ref, mo_ref
+
+
+
+def H_gen(basis_input, elements, geom, spin, charge, ncas, nelecas,
+          mol_ref, mo_ref,
+          save=True, savefile="H_data.npz", geom_id=None):
+    # only CASCI scan part; remove the whole mol_ref / mf_ref / mycas_ref block
+
     mol = gto.Mole()
     mol.atom = geom
-    mol.basis = basis_input          # keep same basis as ref
+    mol.basis = basis_input
     mol.charge = charge
     mol.spin = spin
     mol.symmetry = False
     mol.build()
+    mol.verbose = 0
 
-    # ROHF + X2C (spin-free)
     mf = scf.ROHF(mol).sfx2c1e()
     mf.level_shift = 0.5
     mf.diis_space = 12
     mf.max_cycle = 100
-    if mo_prev is not None:
-        #print('MO prev is used')
-        mf.mo_coeff = mo_prev
+    mf.verbose = 0
     hf_energy = mf.kernel()
     if not mf.converged:
         mf = scf.newton(mf).run()
     hf_energy = mf.e_tot
 
-
-    from pyscf.mcscf.addons import project_init_guess
-
     mycas = mcscf.CASCI(mf, ncas, nelecas)
+    from pyscf.mcscf.addons import project_init_guess
     mo_proj = project_init_guess(mycas, mo_ref, prev_mol=mol_ref)
-    #print('-------------------Going to get the mo_proj---------------------')
-    #print('The bond length I am working on', u2_bond)
-    
-
-
-    from pyscf.fci import direct_spin1, addons
     fcis = direct_spin1.FCI(mol)
     fcis.spin = 0
     fcis.nroots = 1
@@ -97,24 +86,12 @@ def H_gen(basis_input, elements, geom, spin, charge, ncas, nelecas,
     
     h1ecas, ecore = mycas.get_h1eff(mo_proj)
     h2ecas = mycas.get_h2eff(mo_proj)
-
-
-
-
-
+    mycas.verbose = 0
     casci_energy = mycas.kernel(mo_coeff=mo_proj)[0]
-    print('casci_energy', casci_energy)
 
     hf_energies.append(hf_energy)
     casci_energies.append(casci_energy)
     mo_prev = mf.mo_coeff
-
-    #print(f"{u2_bond:8.1f}        {hf_energy:12.8f}           {casci_energy:12.8f}")
-    print('\n')
-
-  
-
-
 
     two_mo = pyscf.ao2mo.restore('1', h2ecas, norb=ncas)
     two_mo = np.swapaxes(two_mo, 1, 3)
@@ -155,3 +132,7 @@ def H_gen(basis_input, elements, geom, spin, charge, ncas, nelecas,
         )
 
     return H, casci_energy
+
+
+
+
