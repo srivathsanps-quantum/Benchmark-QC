@@ -71,11 +71,11 @@ def H_gen(basis_input, elements, geom, spin, charge, ncas, nelecas,
     n_orb = mf.mo_coeff.shape[0]
 
     with suppress_stdout():
-        active_space = find_from_mol(mol, max_norb=ncas, verbose = 0)
+        active_space = find_from_mol(mol, max_norb=ncas, min_norb = 3, verbose = 0)
 
     #This CASCI is taken from pyscf
     mycas = CASCI(mol, ncas=active_space.norb, nelecas=active_space.nel)
-
+    #print('active space', active_space)
 
     mo_guess = mycas.sort_mo(active_space.mo_list, active_space.mo_coeff, base=0)
 
