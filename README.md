@@ -1,5 +1,7 @@
 # Benchmark-QC
 
+[![Docs](https://img.shields.io/badge/docs-README-blue)](docs/README.md)
+
 Benchmark qubit Hamiltonians for N2, FeS, and U2.
 
 This repo stores pre-generated Hamiltonians in `.npz` files (one per system) and provides:
