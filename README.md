@@ -4,6 +4,7 @@
 
 Benchmark qubit Hamiltonians for N2, FeS, and U2.
 
+
 This repo stores pre-generated Hamiltonians in `.npz` files (one per system) and provides:
 - A small Python package (`benchmark_qc/`) with shared utilities
 - Backwards-compatible notebook wrappers in each system folder
