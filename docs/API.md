@@ -1,5 +1,13 @@
 # Package API
 
+## Installation (PyPI)
+
+To install the package from PyPI:
+
+```sh
+pip install benchmark-qc
+```
+
 The importable package lives in `benchmark_qc/`.
 
 ## `benchmark_qc.hamiltonian_test`

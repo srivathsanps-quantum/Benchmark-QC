@@ -1,5 +1,13 @@
 # Usage
 
+## Installation (PyPI)
+
+To install the package from PyPI:
+
+```sh
+pip install benchmark-qc
+```
+
 This repo contains benchmark qubit Hamiltonians for:
 - N2 (folder: `N2/`)
 - FeS (folder: `FeS/`)

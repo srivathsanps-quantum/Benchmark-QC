@@ -1,8 +1,17 @@
 # Benchmark-QC
 
+## Installation (PyPI)
+
+You can install this package directly from PyPI:
+
+```sh
+pip install benchmark-qc
+```
+
 [![Docs](https://img.shields.io/badge/docs-README-blue)](docs/README.md)
 
 Benchmark qubit Hamiltonians for N2, FeS, and U2.
+
 
 This repo stores pre-generated Hamiltonians in `.npz` files (one per system) and provides:
 - A small Python package (`benchmark_qc/`) with shared utilities

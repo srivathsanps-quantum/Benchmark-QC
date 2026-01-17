@@ -1,5 +1,13 @@
 # Saved NPZ Format
 
+## Installation (PyPI)
+
+To install the package from PyPI:
+
+```sh
+pip install benchmark-qc
+```
+
 The PES `.npz` files (e.g. `N2/N2_PES_H1.npz`, `FeS/FeS_PES_H.npz`, `U2/U2_PES_H.npz`) share the same format.
 
 They contain three arrays:
