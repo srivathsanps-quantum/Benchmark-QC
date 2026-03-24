@@ -1,4 +1,4 @@
-active-space-finder @ file:///Users/srivathsanpoyyapakkamsundar/ActiveSpaceFinder
+#active-space-finder @ file:///Users/srivathsanpoyyapakkamsundar/ActiveSpaceFinder
 appdirs==1.4.4
 appnope==0.1.4
 argcomplete==3.6.2
